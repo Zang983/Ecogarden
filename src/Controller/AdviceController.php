@@ -18,27 +18,31 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class AdviceController extends AbstractController
 {
-    #[Route('/api/conseil', name: 'current_month_advices', methods: ['GET'])]
-    public function currentMonthAdvices(MonthRepository $repo, SerializerInterface $serializer): JsonResponse
-    {
-        $advices = $serializer->serialize($this->getAdviceByMonth(date('n'), $repo), 'json', ['groups' => 'advice:read']
-        );
-        return new JsonResponse($advices, Response::HTTP_OK, [], true);
-    }
-
     #[Route('/api/conseil/{month}', name: 'selected_month_advices', methods: ['GET'])]
+    #[Route('/api/conseil', name: 'current_month_advices', methods: ['GET'])]
     public function selectedMonthAdvices(
-        int $month,
         MonthRepository $repo,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        ?int $month,
     ): JsonResponse {
+        if (!$month) {
+            $month = date('n');
+        }
+
         if ($month < 1 || $month > 12) {
             return new JsonResponse([
                 'message' => 'Month must be between 1 and 12'
             ], Response::HTTP_BAD_REQUEST);
         }
-        $advices = $serializer->serialize($this->getAdviceByMonth($month, $repo), 'json', ['groups' => 'advice:read']);
-        return new JsonResponse($advices, Response::HTTP_OK, [], true);
+        $month = $repo->findOneBy(['month_number' => $month]);
+        try {
+            $advices = $serializer->serialize($month->getAdvice(), 'json', ['groups' => 'advice:read']);
+            return new JsonResponse($advices, Response::HTTP_OK, [], true);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'message' => 'An error occurred while fetching the advices : ' . $e
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     #[Route('/api/admin/conseil', name: 'add_advice', methods: ['POST'])]
@@ -105,6 +109,7 @@ class AdviceController extends AbstractController
                         $advice->addMonth($newMonth);
                     }
                 }
+                $manager->persist($advice);
                 $manager->flush();
                 return new JsonResponse([
                     'message' => 'Advice updated'
@@ -114,8 +119,7 @@ class AdviceController extends AbstractController
                     'message' => 'An error occurred while updating the advice : ' . $e[0]
                 ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
-        }
-        else {
+        } else {
             return $isValid;
         }
     }
@@ -176,11 +180,4 @@ class AdviceController extends AbstractController
         }
     }
 
-    private function getAdviceByMonth(int $month, MonthRepository $repo): PersistentCollection|array
-    {
-        $month = $repo->findOneBy(['month_number' => $month]);
-
-
-        return $month ? $month->getAdvice() : [];
-    }
 }

@@ -21,50 +21,31 @@ class MeteoController extends AbstractController
     }
 
     #[Route('/api/meteo/{city}', name: 'meteo_city', methods: ['GET'])]
-    public function getMeteo(string $city): JsonResponse
+    #[Route('/api/meteo/', name: 'meteo_default', methods: ['GET'])]
+    public function getMeteo(?string $city): JsonResponse
     {
+        if (!$city && $this->getUser()) {
+            $city = $this->getUser()->getCity() ? $this->getUser()->getCity() : $this->getUser()->getZipCode();
+        }
         $response = $this->getMeteosInfoFromAPI($city);
         if ($response === 'City not found') {
             return new JsonResponse([
                 'message' => 'City not found'
             ], 404);
         }
-
         if ($response) {
             $response = json_decode($response, true);
         }
-
-        return new JsonResponse([
-            'message' => $response ?? 'No response'
-        ], 200);
-    }
-
-    #[Route('/api/meteo/', name: 'meteo_default', methods: ['GET'])]
-    public function getDefaultMeteo(): JsonResponse
-    {
-
-        $user = $this->getUser();
-        if(!$user) {
+        if (!$response) {
             return new JsonResponse([
-                'message' => 'You are not connected'
-            ], 403);
-        }
-        $data = $user->getCity() ?? $user->getZipCode();
-        $response = $this->getMeteosInfoFromAPI($data);
-        if ($response === 'City not found') {
-            return new JsonResponse([
-                'message' => 'City not found'
-            ], 404);
-        }
-        if ($response) {
-            $response = json_decode($response, true);
+                'message' => 'Json error'
+            ], 400);
         }
 
         return new JsonResponse([
-            'message' => $response ?? 'No response'
+            'message' => $response
         ], 200);
     }
-
 
     private function getMeteosInfoFromAPI(string $city): string
     {
@@ -125,9 +106,7 @@ class MeteoController extends AbstractController
         if (isset($response['lat']) && isset($response['lon'])) {
             $coordinates['lat'] = $response['lat'];
             $coordinates['lon'] = $response['lon'];
-            $coordinates['city'] = $response['name'];
         }
-
         return $coordinates;
     }
 }

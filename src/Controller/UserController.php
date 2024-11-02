@@ -16,7 +16,6 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserController extends AbstractController
 {
-
     #[Route('/api/user', name: 'api_register', methods: ['POST'])]
     public function register(
         Request $request,
@@ -24,22 +23,10 @@ class UserController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         ValidatorInterface $validator
     ): JsonResponse {
-        $data = json_decode($request->getContent(), true);
-        if ($data === null) {
-            return new JsonResponse(['error' => 'Invalid JSON'], 400);
+        $user = $this->createUserFromRequest($request, $validator, $passwordHasher);
+        if ($user instanceof JsonResponse) {
+            return $user;
         }
-        $user = new User();
-        $user->setEmail($data['email'] ?? "");
-        $user->setCity($data['city'] ?? null);
-        $user->setZipCode($data['zip_code'] ?? null);
-        $user->setPassword($data['password'] ?? "");
-        $user->setRoles(['ROLE_ADMIN']);
-
-        $errors = $validator->validate($user);
-        if (count($errors) > 0) {
-            return new JsonResponse(['error' => (string)$errors], 400);
-        }
-        $user->setPassword($passwordHasher->hashPassword($user, $data['password']));
         $entityManager->persist($user);
         $entityManager->flush();
 
@@ -47,20 +34,18 @@ class UserController extends AbstractController
     }
 
     #[Route('/api/auth', name: 'api_login', methods: ['POST'])]
-    public function login(
-        Request $request,
-        JWTTokenManagerInterface $jwtManager
-    ) {
+    public function login(JWTTokenManagerInterface $jwtManager): JsonResponse
+    {
         $user = $this->getUser();
 
         if (!$user instanceof UserInterface) {
             return new JsonResponse(['error' => 'Invalid credentials.'], 401);
         }
-
         $token = $jwtManager->create($user);
 
         return new JsonResponse(['token' => $token]);
     }
+
     #[Route('/api/admin/user/{id}', name: 'api_delete_user', methods: ['DELETE'])]
     public function deleteUser(
         User $user,
@@ -71,6 +56,7 @@ class UserController extends AbstractController
 
         return new JsonResponse(['status' => 'User deleted'], 200);
     }
+
     #[Route('/api/admin/user/{id}', name: 'api_update_user', methods: ['PUT'])]
     public function updateUser(
         User $user,
@@ -79,24 +65,53 @@ class UserController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         ValidatorInterface $validator
     ): JsonResponse {
-        $data = json_decode($request->getContent(), true);
-        if ($data === null) {
-            return new JsonResponse(['error' => 'Invalid JSON'], 400);
+        $newUser = $this->createUserFromRequest($request, $validator, $passwordHasher);
+        if ($newUser instanceof JsonResponse) {
+            return $newUser;
         }
-        $user->setEmail($data['email'] ?? $user->getEmail());
-        $user->setCity($data['city'] ?? $user->getCity());
-        $user->setZipCode($data['zip_code'] ?? $user->getZipCode());
-        $user->setPassword($data['password'] ?? $user->getPassword());
-        $user->setRoles($data['roles'] ?? $user->getRoles());
 
-        $errors = $validator->validate($user);
-        if (count($errors) > 0) {
-            return new JsonResponse(['error' => (string)$errors], 400);
+        ##TODO : Une méthode comparant les valeurs de l'entité User et de $newUser pour ne mettre à jour que les valeurs modifiéees serait pertinente.
+        $user->setEmail($newUser->getEmail());
+        $user->setCity($newUser->getCity());
+        $user->setZipCode($newUser->getZipCode());
+        $user->setPassword($newUser->getPassword());
+        //If the request is a PUT, we don't want to override the roles if they are not provided
+        if (empty($newUser->getRoles())) {
+            $user->setRoles($newUser->getRoles());
         }
-        $user->setPassword($passwordHasher->hashPassword($user, $data['password']));
+
         $entityManager->persist($user);
         $entityManager->flush();
 
         return new JsonResponse(['status' => 'User updated!'], 200);
     }
+
+    private function createUserFromRequest(
+        Request $request,
+        ValidatorInterface $validator,
+        UserPasswordHasherInterface $passwordHasher
+    ): User|JsonResponse {
+        $data = json_decode($request->getContent(), true);
+        if ($data === null) {
+            return new JsonResponse(['error' => 'Invalid JSON'], 400);
+        }
+        $user = new User();
+        $user->setEmail($data['email'] ?? "");
+        $user->setCity($data['city'] ?? null);
+        $user->setZipCode($data['zip_code'] ?? null);
+        $user->setPassword($data['password'] ?? "");
+        //If the request is a PUT, we don't want to override the roles if they are not provided
+        if ($request->getMethod() === 'PUT') {
+            isset($data['roles']) ? $user->setRoles($data['roles']) : $user->setRoles([]);
+        } else {
+            $user->setRoles($data['roles'] ?? ['ROLE_USER']);
+        }
+        $errors = $validator->validate($user);
+        if (count($errors) > 0) {
+            return new JsonResponse(['error' => (string)$errors], 400);
+        }
+        $user->setPassword($passwordHasher->hashPassword($user, $data['password']));
+        return $user;
+    }
+
 }
