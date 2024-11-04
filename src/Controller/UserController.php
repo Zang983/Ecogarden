@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -30,7 +31,7 @@ class UserController extends AbstractController
         $entityManager->persist($user);
         $entityManager->flush();
 
-        return new JsonResponse(['status' => 'User created!'], 201);
+        return new JsonResponse(['status' => 'User created!'], Response::HTTP_CREATED);
     }
 
     #[Route('/api/auth', name: 'api_login', methods: ['POST'])]
@@ -39,11 +40,11 @@ class UserController extends AbstractController
         $user = $this->getUser();
 
         if (!$user instanceof UserInterface) {
-            return new JsonResponse(['error' => 'Invalid credentials.'], 401);
+            return new JsonResponse(['error' => 'Invalid credentials.'], Response::HTTP_UNAUTHORIZED);
         }
         $token = $jwtManager->create($user);
 
-        return new JsonResponse(['token' => $token]);
+        return new JsonResponse(['token' => $token], Response::HTTP_OK);
     }
 
     #[Route('/api/admin/user/{id}', name: 'api_delete_user', methods: ['DELETE'])]
@@ -54,7 +55,7 @@ class UserController extends AbstractController
         $entityManager->remove($user);
         $entityManager->flush();
 
-        return new JsonResponse(['status' => 'User deleted'], 200);
+        return new JsonResponse(['status' => 'User deleted'], Response::HTTP_OK);
     }
 
     #[Route('/api/admin/user/{id}', name: 'api_update_user', methods: ['PUT'])]
@@ -83,7 +84,7 @@ class UserController extends AbstractController
         $entityManager->persist($user);
         $entityManager->flush();
 
-        return new JsonResponse(['status' => 'User updated!'], 200);
+        return new JsonResponse(['status' => 'User updated!'], Response::HTTP_OK);
     }
 
     private function createUserFromRequest(
@@ -93,7 +94,7 @@ class UserController extends AbstractController
     ): User|JsonResponse {
         $data = json_decode($request->getContent(), true);
         if ($data === null) {
-            return new JsonResponse(['error' => 'Invalid JSON'], 400);
+            return new JsonResponse(['error' => 'Invalid JSON'], Response::HTTP_BAD_REQUEST);
         }
         $user = new User();
         $user->setEmail($data['email'] ?? "");
@@ -108,7 +109,7 @@ class UserController extends AbstractController
         }
         $errors = $validator->validate($user);
         if (count($errors) > 0) {
-            return new JsonResponse(['error' => (string)$errors], 400);
+            return new JsonResponse(['error' => (string)$errors], Response::HTTP_BAD_REQUEST);
         }
         $user->setPassword($passwordHasher->hashPassword($user, $data['password']));
         return $user;

@@ -5,6 +5,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -31,7 +32,7 @@ class MeteoController extends AbstractController
         if ($response === 'City not found') {
             return new JsonResponse([
                 'message' => 'City not found'
-            ], 404);
+            ], Response::HTTP_NOT_FOUND);
         }
         if ($response) {
             $response = json_decode($response, true);
@@ -39,12 +40,12 @@ class MeteoController extends AbstractController
         if (!$response) {
             return new JsonResponse([
                 'message' => 'Json error'
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         return new JsonResponse([
             'message' => $response
-        ], 200);
+        ], Response::HTTP_OK);
     }
 
     private function getMeteosInfoFromAPI(string $city): string
