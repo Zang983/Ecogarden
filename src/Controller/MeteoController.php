@@ -3,28 +3,23 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Symfony\Contracts\Cache\CacheInterface;
 
 class MeteoController extends AbstractController
 {
     private string $api_key;
 
     public function __construct(private HttpClientInterface $client)
-    {
-        $dotenv = new Dotenv();
-        $dotenv->loadEnv(__DIR__ . '/../../.env.local');
-        $this->api_key = $_ENV['API_KEY'];
-    }
+    {}
 
     #[Route('/api/meteo/{city}', name: 'meteo_city', methods: ['GET'])]
     #[Route('/api/meteo/', name: 'meteo_default', methods: ['GET'])]
     public function getMeteo(?string $city): JsonResponse
     {
+        $this->api_key = $this->getParameter('api_key');
         if (!$city && $this->getUser()) {
             $city = $this->getUser()->getCity() ? $this->getUser()->getCity() : $this->getUser()->getZipCode();
         }
