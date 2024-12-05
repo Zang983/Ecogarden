@@ -17,7 +17,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserController extends AbstractController
 {
-    #[Route('/api/user', name: 'api_register', methods: ['POST'])]
+    #[Route('/api/user', name: 'api_register', methods: [Request::METHOD_POST])]
     public function register(
         Request $request,
         EntityManagerInterface $entityManager,
@@ -34,7 +34,7 @@ class UserController extends AbstractController
         return new JsonResponse(['status' => 'User created!'], Response::HTTP_CREATED);
     }
 
-    #[Route('/api/auth', name: 'api_login', methods: ['POST'])]
+    #[Route('/api/auth', name: 'api_login', methods: [Request::METHOD_POST])]
     public function login(JWTTokenManagerInterface $jwtManager): JsonResponse
     {
         $user = $this->getUser();
@@ -47,7 +47,7 @@ class UserController extends AbstractController
         return new JsonResponse(['token' => $token], Response::HTTP_OK);
     }
 
-    #[Route('/api/admin/user/{id}', name: 'api_delete_user', methods: ['DELETE'])]
+    #[Route('/api/admin/user/{id}', name: 'api_delete_user', methods: [Request::METHOD_DELETE])]
     public function deleteUser(
         User $user,
         EntityManagerInterface $entityManager
@@ -58,7 +58,7 @@ class UserController extends AbstractController
         return new JsonResponse(['status' => 'User deleted'], Response::HTTP_OK);
     }
 
-    #[Route('/api/admin/user/{id}', name: 'api_update_user', methods: ['PUT'])]
+    #[Route('/api/admin/user/{id}', name: 'api_update_user', methods: [Request::METHOD_PUT])]
     public function updateUser(
         User $user,
         Request $request,

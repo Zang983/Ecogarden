@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -15,8 +16,8 @@ class MeteoController extends AbstractController
     public function __construct(private HttpClientInterface $client)
     {}
 
-    #[Route('/api/meteo/{city}', name: 'meteo_city', methods: ['GET'])]
-    #[Route('/api/meteo/', name: 'meteo_default', methods: ['GET'])]
+    #[Route('/api/meteo/{city}', name: 'meteo_city', methods: [Request::METHOD_GET])]
+    #[Route('/api/meteo/', name: 'meteo_default', methods: [Request::METHOD_GET])]
     public function getMeteo(?string $city): JsonResponse
     {
         $this->api_key = $this->getParameter('api_key');

@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\Advice;
 use App\Repository\MonthRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\PersistentCollection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,8 +17,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class AdviceController extends AbstractController
 {
-    #[Route('/api/conseil/{month}', name: 'selected_month_advices', methods: ['GET'])]
-    #[Route('/api/conseil', name: 'current_month_advices', methods: ['GET'])]
+    #[Route('/api/conseil/{month}', name: 'selected_month_advices', methods: [Request::METHOD_GET])]
+    #[Route('/api/conseil', name: 'current_month_advices', methods: [Request::METHOD_GET])]
     public function selectedMonthAdvices(
         MonthRepository $repo,
         SerializerInterface $serializer,
@@ -45,7 +44,7 @@ class AdviceController extends AbstractController
         }
     }
 
-    #[Route('/api/admin/conseil', name: 'add_advice', methods: ['POST'])]
+    #[Route('/api/admin/conseil', name: 'add_advice', methods: [Request::METHOD_POST])]
     public function addAdvice(
         Request $request,
         EntityManagerInterface $manager,
@@ -75,7 +74,7 @@ class AdviceController extends AbstractController
         }
     }
 
-    #[Route('/api/admin/conseil/{id}', name: 'update_advice', methods: ['PUT'])]
+    #[Route('/api/admin/conseil/{id}', name: 'update_advice', methods: [Request::METHOD_PUT])]
     public function updateAdvice(
         Advice $advice,
         Request $request,
@@ -124,7 +123,7 @@ class AdviceController extends AbstractController
         }
     }
 
-    #[Route('/api/admin/conseil/{id}', name: 'delete_advice', methods: ['DELETE'])]
+    #[Route('/api/admin/conseil/{id}', name: 'delete_advice', methods: [Request::METHOD_DELETE])]
     public function deleteAdvice(Advice $advice, EntityManagerInterface $manager): JsonResponse
     {
         try {
