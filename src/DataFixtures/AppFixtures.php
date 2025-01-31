@@ -30,7 +30,7 @@ class AppFixtures extends Fixture
 
         // Générer les utilisateurs
         $users = UserFactory::createMany(30, fn() => [
-            'password' => $this->passwordHasher->hashPassword(new User(), 'password')
+            'password' => $this->passwordHasher->hashPassword(new User(), 'password'),
         ]);
 
         // Générer les conseils

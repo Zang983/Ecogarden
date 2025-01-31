@@ -22,6 +22,11 @@ Renommer le fichier template.env.local en "env.local" et ajouter les information
 Concernant l'installation et la génération des clés SSL vous pouvez vous référer à la documentation officielle du bundle
 sur le site de Symfony : https://symfony.com/bundles/LexikJWTAuthenticationBundle/current/index.html#installation
 
+## Initialisation de la base de données 
+
+Pour initialiser la base de données, utiliser la commande : "php bin/console doctrine:database:create" pour créer la base de données
+puis "php bin/console doctrine:migrations:migrate" pour exécuter les migrations et créer les tables nécessaires.
+
 ## Utilisation
 
 Pour lancer le serveur, utiliser la commande : "symfony serve" pour lancer le serveur en local.
@@ -30,35 +35,36 @@ fournies dans les fichiers swagger.json / swagger.yaml
 
 --------------------------------------------
 
+# Api EcoGarden & Co
+
 ## Description
-This project, from the Openclassrooms PHP/Symfony training course, involves creating an API that allows:
 
-Managing users
+This project, part of the PHP/Symfony training course offered by Openclassrooms, involves creating an API that allows:
 
-Managing gardening advice valid according to the months of the year
-
-Obtaining weather information from the OpenWeatherMap API
+- Managing users
+- Managing gardening advice according to the months of the year
+- Obtaining weather information from the OpenWeatherMap API
 
 ## Installation
-Download the project and use the following command to install the dependencies: "composer install".
 
-Rename the template.env.local file to .env.local and add the required information:
+Download the project and use the following command: `composer install` to install the dependencies.
 
-DATABASE_URL: URL of the database
+Rename the `template.env.local` file to `.env.local` and add the required information:
 
-JWT_SECRET_KEY: pre-filled by default
+- `DATABASE_URL`: URL of the database
+- `JWT_SECRET_KEY`: pre-filled by default
+- `JWT_PUBLIC_KEY`: pre-filled by default
+- `JWT_PASSPHRASE`: Random passphrase for generating JWT keys
+- `API_KEY`: OpenWeatherMap API key obtained from the API's website after registration
 
-JWT_PUBLIC_KEY: pre-filled by default
+For installation and generating SSL keys, refer to the official documentation of the bundle on the Symfony website: [LexikJWTAuthenticationBundle Installation](https://symfony.com/bundles/LexikJWTAuthenticationBundle/current/index.html#installation)
 
-JWT_PASSPHRASE: Random passphrase for generating JWT keys
+## Database Initialization
 
-API_KEY: OpenWeatherMap API key (you need to sign up to get a key)
-
-For installation and generating SSL keys, you can refer to the official documentation of the bundle on the Symfony website: https://symfony.com/bundles/LexikJWTAuthenticationBundle/current/index.html#installation
+To initialize the database, use the following command: `php bin/console doctrine:database:create` to create the database, then `php bin/console doctrine:migrations:migrate` to run the migrations and create the necessary tables.
 
 ## Usage
-To start the server, use the following command: "symfony serve" to start the local server.
 
-You can use software like Postman to test the different API routes, with information provided in the swagger.json / swagger.yaml files.
+To start the server, use the following command: `symfony serve` to start the local server.
 
-Let me know if you need any further adjustments or clarifications!
+You can use software like Postman to test the various API routes, with information provided in the `swagger.json` / `swagger.yaml` files.

@@ -97,15 +97,14 @@ class AdviceController extends AbstractController
                     ], Response::HTTP_BAD_REQUEST);
                 }
 
+
                 $advice->setContent($newAdvice->getContent());
-                foreach ($advice->getMonths() as $originalMonth) {
-                    if (!$newAdvice->getMonths()->contains($originalMonth)) {
-                        $advice->removeMonth($originalMonth);
-                    }
-                }
                 foreach ($newAdvice->getMonths() as $newMonth) {
                     if (!$advice->getMonths()->contains($newMonth)) {
                         $advice->addMonth($newMonth);
+                    }
+                    else{
+                        $advice->removeMonth($newMonth);
                     }
                 }
                 $manager->persist($advice);

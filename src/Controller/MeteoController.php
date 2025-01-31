@@ -24,6 +24,10 @@ class MeteoController extends AbstractController
         if (!$city && $this->getUser()) {
             $city = $this->getUser()->getCity() ? $this->getUser()->getCity() : $this->getUser()->getZipCode();
         }
+        if(!$city)
+        {
+            throw new \Exception('City not found');
+        }
         $response = $this->getMeteosInfoFromAPI($city);
         if ($response === 'City not found') {
             return new JsonResponse([
