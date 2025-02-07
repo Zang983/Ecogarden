@@ -12,6 +12,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 
@@ -47,7 +48,8 @@ class UserController extends AbstractController
         return new JsonResponse(['token' => $token], Response::HTTP_OK);
     }
 
-    #[Route('/api/admin/user/{id}', name: 'api_delete_user', methods: [Request::METHOD_DELETE])]
+    #[isGranted('ROLE_ADMIN')]
+    #[Route('/api/user/{id}', name: 'api_delete_user', methods: [Request::METHOD_DELETE])]
     public function deleteUser(
         User $user,
         EntityManagerInterface $entityManager
@@ -58,7 +60,8 @@ class UserController extends AbstractController
         return new JsonResponse(['status' => 'User deleted'], Response::HTTP_OK);
     }
 
-    #[Route('/api/admin/user/{id}', name: 'api_update_user', methods: [Request::METHOD_PUT])]
+    #[isGranted('ROLE_ADMIN')]
+    #[Route('/api/user/{id}', name: 'api_update_user', methods: [Request::METHOD_PUT])]
     public function updateUser(
         User $user,
         Request $request,
@@ -70,8 +73,6 @@ class UserController extends AbstractController
         if ($newUser instanceof JsonResponse) {
             return $newUser;
         }
-
-        ##TODO : Une méthode comparant les valeurs de l'entité User et de $newUser pour ne mettre à jour que les valeurs modifiéees serait pertinente.
         $user->setEmail($newUser->getEmail());
         $user->setCity($newUser->getCity());
         $user->setZipCode($newUser->getZipCode());

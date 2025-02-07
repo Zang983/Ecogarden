@@ -106,7 +106,7 @@
         }
       }
     },
-    "/api/admin/user/{id}": {
+    "/api/user/{id}": {
       "delete": {
         "summary": "Delete a user",
         "security": [
@@ -311,9 +311,7 @@
             "description": "An error occurred while fetching the advices"
           }
         }
-      }
-    },
-    "/api/admin/conseil": {
+      },
       "post": {
         "summary": "Add a new advice",
         "security": [
@@ -356,8 +354,9 @@
           }
         }
       }
+
     },
-    "/api/admin/conseil/{id}": {
+    "/api/conseil/{id}": {
       "put": {
         "summary": "Update an existing advice",
         "security": [

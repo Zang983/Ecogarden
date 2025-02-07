@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -43,8 +44,8 @@ class AdviceController extends AbstractController
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
-    #[Route('/api/admin/conseil', name: 'add_advice', methods: [Request::METHOD_POST])]
+    #[isGranted('ROLE_ADMIN')]
+    #[Route('/api/conseil', name: 'add_advice', methods: [Request::METHOD_POST])]
     public function addAdvice(
         Request $request,
         EntityManagerInterface $manager,
@@ -74,7 +75,8 @@ class AdviceController extends AbstractController
         }
     }
 
-    #[Route('/api/admin/conseil/{id}', name: 'update_advice', methods: [Request::METHOD_PUT])]
+    #[isGranted('ROLE_ADMIN')]
+    #[Route('/api/conseil/{id}', name: 'update_advice', methods: [Request::METHOD_PUT])]
     public function updateAdvice(
         Advice $advice,
         Request $request,
@@ -121,8 +123,8 @@ class AdviceController extends AbstractController
             return $isValid;
         }
     }
-
-    #[Route('/api/admin/conseil/{id}', name: 'delete_advice', methods: [Request::METHOD_DELETE])]
+    #[isGranted('ROLE_ADMIN')]
+    #[Route('/api/conseil/{id}', name: 'delete_advice', methods: [Request::METHOD_DELETE])]
     public function deleteAdvice(Advice $advice, EntityManagerInterface $manager): JsonResponse
     {
         try {

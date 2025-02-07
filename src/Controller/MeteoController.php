@@ -7,13 +7,15 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class MeteoController extends AbstractController
 {
     private string $api_key;
 
-    public function __construct(private HttpClientInterface $client)
+    public function __construct(private HttpClientInterface $client, private CacheInterface $cache)
     {}
 
     #[Route('/api/meteo/{city}', name: 'meteo_city', methods: [Request::METHOD_GET])]
@@ -28,7 +30,13 @@ class MeteoController extends AbstractController
         {
             throw new \Exception('City not found');
         }
-        $response = $this->getMeteosInfoFromAPI($city);
+        // mettre la mise en cache.
+
+        $response = $this->cache->get('meteo_'. $city,function (ItemInterface $item) use($city){
+         $item->expiresAfter(3600);
+         return $this->getMeteosInfoFromAPI($city);
+        });
+
         if ($response === 'City not found') {
             return new JsonResponse([
                 'message' => 'City not found'
